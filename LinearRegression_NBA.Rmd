@@ -1,0 +1,118 @@
+---
+title: "LinearRegression - NBA"
+author: "Casandra Philipson"
+date: "February 26, 2016"
+output: html_document
+---
+Course: EdX MIT 15071x  
+  
+###Overview
+This analysis investigates archived NBA data in order to make the following predictions:  
+  
+1. How many wins are needed to make it to the playoffs?  
+2. How many more points scored are needed to win enough games to make it to the playoffs?  
+3. How well can a linear regression model predict future wins?  
+  
+
+```{r}
+NBA <- read.csv("NBA_train.csv")
+str(NBA)
+```
+
+__A few definitions:__  
+PTS - points score  
+oppPTS - opponent scoring  
+FG - successful field goals  
+X2P - two pointers  
+X3P - three pointers  
+A at the end means means attempted  
+   
+   
+### Making it to the playoffs
+How many games does a team need to win to make it to the playoffs?  
+```{r}
+table(NBA$W, NBA$Playoffs)
+```
+Teams are likely to go the playoffs if they win around 42 to 55 games.
+
+```{r}
+# Compute Points Difference
+NBA$PTSdiff <- NBA$PTS - NBA$oppPTS
+
+# Check for linear relationship
+plot(NBA$PTSdiff, NBA$W)
+```
+There is a clear linear relationship between wins and difference in points scored. This is similar to baseball's Moneyball predictions. Based on the relationship, creating a linear regression model to predict wins is appropriate.  
+  
+### Linear regression model: Wins
+```{r}
+WinsReg <- lm(W ~ PTSdiff, data=NBA)
+summary(WinsReg)
+```
+
+$$ W = 41 + 0.0326*PTSdiff >= 42 $$  
+__We need to score about 30 more points than we allow to win ~42 games.__  
+  
+### Linear regression model: Points Scored
+A model including all variables dealing with points. 
+```{r}
+PointsReg <- lm(PTS ~ X2PA + X3PA + FTA + AST + ORB + DRB + TOV + STL + BLK, data = NBA)
+summary(PointsReg)
+
+# Sum of Squared Errors
+SSE <- sum(PointsReg$residuals^2)
+
+# Root mean squared error
+RMSE <- sqrt(SSE/nrow(NBA))
+RMSE
+
+# Average number of points in a season
+mean(NBA$PTS)
+```
+
+__Summary of model PointsReg:__  
+Although the RMSE is ~184, the aferage points scored is >8000/season. Therefore the RMSE is not too bad.  
+  
+__Remove insignifcant variables one at a time__  
+
+```{r}
+PointsReg2 <- lm(PTS ~ X2PA + X3PA + FTA + AST + ORB + DRB + STL + BLK, data = NBA)
+summary(PointsReg2)
+
+PointsReg3 <- lm(PTS ~ X2PA + X3PA + FTA + AST + ORB + STL + BLK, data = NBA)
+summary(PointsReg3)
+
+PointsReg4 <- lm(PTS ~ X2PA + X3PA + FTA + AST + ORB + STL, data = NBA)
+summary(PointsReg4)
+
+# Compute SSE and RMSE for model 4
+SSE_4 <- sum(PointsReg4$residuals^2)
+RMSE_4 <- sqrt(SSE_4/nrow(NBA))
+RMSE_4
+```
+
+__Summary of model PointsReg4:__  
+The last model created is the simplest and most intuitive. Additionally the RMSE is very close to the original model containing all variables. This means model PointsReg4 is best for modeling and predicting wins.  
+  
+  
+### Predictive Ability for Future Seasons
+Load a new set of test data to assess how well the model PointsReg4 performs on data it has not been introduced to.  
+```{r}
+NBA_test <- read.csv("NBA_test.csv")
+
+# Make predictions on test set
+PointsPredictions <-  predict(PointsReg4, newdata = NBA_test)
+
+# Compute out-of-sample R^2
+SSE <- sum((PointsPredictions - NBA_test$PTS)^2)
+SST <- sum((mean(NBA$PTS) - NBA_test$PTS)^2)
+R2 <- 1 - SSE/SST
+R2
+
+# Compute the RMSE
+RMSE <- sqrt(SSE/nrow(NBA_test))
+RMSE
+```
+
+__Summary of model's predictive power:__  
+The performance of PointsReg4 was good for predicting future seasons with a R^2^ of 0.8127 and RMSE of 196.4.

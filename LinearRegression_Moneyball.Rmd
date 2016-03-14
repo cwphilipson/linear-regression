@@ -1,0 +1,101 @@
+---
+title: "Linear Regression - Moneyball"
+author: "Casandra Philipson"
+date: "February 26, 2016"
+output: pdf_document
+---
+Course: EdX MIT 15071x  
+  
+###Moneyball History
+In the Moneyball year (2002), the distribution of Major League Baseball team salaries was directly correlated to winnings. Paul DePodesta devised a sabermetric-based evaluation to assemble a competitive team for The Oakland Athletics' (the A's), and predict how to get to _and_ win the world series.  
+
+This report uses linear regression models to inspect the Moneyball predictions. Two main questions are addressed first:  
+  
+1. How many baseball games does a team need to win in regular season to make it to playoffs? 95+ gives a really good chance!  
+2. What run difference is needed to win 95+ games? ~135 runs!  
+
+###A Linear Regression Model to Understand Moneyball  
+
+```{r}
+# Read in data
+baseball <- read.csv("baseball.csv")
+
+# Subset to only include moneyball years
+moneyball <- subset(baseball, Year < 2002)
+
+# Compute RD, the Run Difference (RS = run scored, RA = runs allowed)
+moneyball$RD <- moneyball$RS - moneyball$RA
+
+# Make a scatterplot to check for linear relationship
+plot(moneyball$RD, moneyball$W)
+```
+
+A clear positive linear relationship exists between wins and the run difference.    
+
+```{r}
+# Regression model to predict wins
+WinsReg = lm(W ~ RD, data=moneyball)
+summary(WinsReg)
+```
+
+Our regression model comes up with the following equation:  
+$$ W = 80.8814 + 0.1058*RD $$  
+We also know that we need to win ~95 games, W >= 95, thus:  
+$$ 80.8814 + 0.1058*RD >= 95 $$  
+Furthermore:  
+$$ RD >= (95-80.8814) / 0.1058 = 133.4 $$  
+
+This means that if a team scores >133 runs, they have a good change of winning 95+ games.  
+
+### Predict Runs Scored
+Classically, __batting average__ (BA) was used to predict runs scored. However, the A's determined that __On-Base Percentage__ (OBP) was most important and __Slugging Percentage__ (SLG) was a very good predictor.  
+  
+A first attempts at a regression model to predict runs scored:
+
+```{r}
+RunsReg <- lm(RS ~ OBP + SLG + BA, data=moneyball)
+summary(RunsReg)
+```
+BA has a large negative coefficient. This means that, all other things equal, a team with a higher batting average will score fewer runs. This doesn't make senses and suggests there is a high level of multicolinearity. 
+  
+A new linear regression model excluding BA:
+```{r}
+RunsReg <- lm(RS ~ OBP + SLG, data=moneyball)
+summary(RunsReg)
+```
+
+This model makes a lot more sense. All coefficients are positive and highly significant. Additionally, the coefficient for OBP is much larger than SLG suggesting that OBP is the best predictor of runs scored. To emphasize, batting average is overrated for this prediction.
+
+###Predicting Runs and Wins for a Future Season
+__Runs Scored:__  
+At the beginning of the 2002 season, the A's had 24 batters on their roster. Using 2001 regular season statistics:
+  
+* Team OBP is 0.339  
+* Team SLG is 0.430  
+  
+The regression equation is:  
+$$ RS = -804 + 2737.77(OBP) + 1584.91(SLG) = 805 $$  
+  
+__Runs Allowed:__  
+In the same year the A's had 17 pitchers on their roster. From 2001 statistics:  
+  
+* Team OOBP is 0.307  
+* Team OSLG is 0.373  
+  
+The regression equation is:  
+$$ RA = -837.38 + 2913.60(OOBP) + 1514.29(OSLG) = 662 $$  
+
+__Predict Win:s__  
+The regression equation to predict wins is:  
+$$ W = 80.8814 + 0.1058*(RS-RA) = 100 $$  
+  
+  
+###Comparing Predictions and Actual Turnout for 2002
+  
+__Moneyball__ | Our Prediction | Paul's Prediction | Actual
+------------- | -------------- | ----------------- | ------
+Runs Scored   | 805            | 800 - 802         | 800
+Runs Allowed  | 622            | 650 - 670         | 653
+Wins          | 100            | 93 - 97           | 103
+
+The A's made it to the playoffs in 2000, 2001, 2002, and 2003. But they didn't win the World Series. _Why?_ There are too few games in the playoffs to generate reliable performance predictions. _Logistic Regression_ may help predict this.
