@@ -13,10 +13,10 @@ Features: Team, League, Year, RS (runs scored), RA (runs allowed), W (wins), OBP
 Linear_Regression_Moneyball.Rmd  
 The code performs the following steps:  
 1.  Read in baseball dataset and subset only Moneyball years (<2002)  
-2.  Compute run differene and verify linear relationship between winning and nun difference
-3.  Build regression model to predict wins based on run difference for past and future seasons
-4.  Build regression model to predict runs scored for past and future seasons
-5.  Compare predictions with actual turnout for 2002
+2.  Compute run differene and verify linear relationship between winning and nun difference  
+3.  Build regression model to predict wins based on run difference for past and future seasons  
+4.  Build regression model to predict runs scored for past and future seasons  
+5.  Compare predictions with actual turnout for 2002  
 One html output file is generated from the R markdown script that includes all linear regression models and data plots.  
   
   
@@ -30,13 +30,13 @@ Features used: PTS (points scored), oppPTS (opponent scoring), FG (successful fi
 LinearRegression_NBA.Rmd  
 The code performs the following steps:  
 1.  Import training dataset  
-2.  Compute point difference and check for linear relationship between points and wins
-3.  Build linear regression model to predict wins
-4.  Build linear regression model to predict points scored
-5.  Optimize models based on significant variables
-6.  Import testing dataset
-7.  Make predictions on test data set
-8.  Summarize model's predictive power using out-of-sample R^2
+2.  Compute point difference and check for linear relationship between points and wins  
+3.  Build linear regression model to predict wins  
+4.  Build linear regression model to predict points scored  
+5.  Optimize models based on significant variables  
+6.  Import testing dataset  
+7.  Make predictions on test data set  
+8.  Summarize model's predictive power using out-of-sample R^2  
   
   
 ## Wine Price Prediction
@@ -49,7 +49,7 @@ Features: AGST(average growing season temperature), HarvestRain, Year (age of wi
 LinearRegression_Wine.Rmd  
 The script performs the following steps:  
 1.  Import all data  
-2.  Construct one-variable, two-variable, and multiple-variable linear regression models
-3.  Calculate the sum of squared errors from each model ("SSE")  
-4.  Optimize the multiple-variable model based on coefficients
-5.  Assess how well the model performs on new data (wine_test.csv)
+2.  Construct one-variable, two-variable, and multiple-variable linear regression models  
+3.  Calculate the sum of squared errors from each model ("SSE") 
+4.  Optimize the multiple-variable model based on coefficients  
+5.  Assess how well the model performs on new data (wine_test.csv)  
